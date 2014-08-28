@@ -1,3 +1,5 @@
+require 'set'
+
 module ApipieBindings
 
   class Action
@@ -35,6 +37,26 @@ module ApipieBindings
         end
       else
         []
+      end
+    end
+
+    def all_params
+      present_params = Set.new
+      (params + params_from_routes).select do |param|
+        unless present_params.include?(param.name.to_s)
+          present_params << param.name.to_s
+        end
+      end
+    end
+
+    def params_from_routes
+      self.routes.inject([]) do |params, route|
+        params.concat(route.params_in_path.map do |param_name|
+                        Param.new(:name          => param_name,
+                                  :description   => '',
+                                  :expected_type => 'string',
+                                  :required      => true)
+                      end)
       end
     end
 
