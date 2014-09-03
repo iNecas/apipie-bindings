@@ -23,7 +23,8 @@ module ApipieBindings
       end
 
       def create(data)
-        raise 'not implemented'
+        result = resource.action(:create).call(data.merge(self.data))
+        build_member(result)
       end
 
       def find(conditions)
@@ -47,7 +48,7 @@ module ApipieBindings
         if unique
           conditions = unique_conditions(conditions)
         end
-        app_config.search_options(resource.name, conditions)
+        resource_config.search_options(conditions)
       end
 
       def build_member(member_data)
@@ -55,7 +56,7 @@ module ApipieBindings
       end
 
       def unique_keys
-        app_config.unique_keys(resource.name)
+        resource_config.unique_keys
       end
 
       # Reduces the conditions to the minimal set that uniquely identifies the

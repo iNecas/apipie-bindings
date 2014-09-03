@@ -11,6 +11,10 @@ module ApipieBindings
         @data       = stringify_keys(data)
       end
 
+      def resource_config
+        @app_config.resource_config(resource && resource.name)
+      end
+
       def define_accessors!
         raise NotImplementedError
       end
@@ -26,8 +30,7 @@ module ApipieBindings
       end
 
       def define_sub_resources!
-        resource_name = resource && resource.name
-        app_config.sub_resources(resource_name, data).each do |sub_resource|
+        resource_config.sub_resources(data).each do |sub_resource|
           define_sub_resource_method(sub_resource)
         end
       end

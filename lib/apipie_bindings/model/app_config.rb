@@ -1,52 +1,42 @@
 module ApipieBindings
   module Model
     class AppConfig
-      attr_reader :api, :name
+      attr_reader :api, :name, :resource_configs
 
       def initialize(api, name = "Application")
         @api  = api
         @name = name
+        @resource_config_mapping = {}
       end
 
       # @api override
-      # @param resource_name [Symbol]
-      # @return [Array<SubResource>]
-      def sub_resources(resource_name, data)
-        []
+      def resource_config_classes
+        [Model::ResourceConfig]
       end
 
-      # @api override
-      # Produces search options for the index action based on the conditions
-      #
-      # @param resource_name [Symbol]
-      # @param conditions [Hash] - key-value conditions to produce the search query
-      # @return [Hash] - search params to be setn to the index action.
-      def search_options(resource_name, conditions)
-        conditions
-      end
-
-      # @api override
-      # @param resource_name [Symbol]
-      # @return [Array<Array<String>>] - various combinations of
-      #   params that uniquely identify the resource
-      def unique_keys(resource_name)
-        [%w[id], %w[name]]
-      end
-
-      # Helper method for producing the sub_resource objects
-      def sub_resource(name, conditions = {})
-        SubResource.new(name, conditions)
-      end
-
-
-      class SubResource
-        attr_reader :name, :conditions
-
-        def initialize(resource_name, conditions)
-          raise ArgumentError unless resource_name.is_a? Symbol
-          @name       = resource_name
-          @conditions = conditions
+      def resource_config(resource_name)
+        if @resource_config_mapping.key?(resource_name)
+          @resource_config_mapping[resource_name]
+        else
+          if resource_config = find_resource_config(resource_name)
+            @resource_config_mapping[resource_name] = resource_config
+          else
+            raise "Could not find resource configuration for #{resource_name}"
+          end
+          resource_config
         end
+      end
+
+      private
+
+      def find_resource_config(resource_name)
+        self.resource_config_classes.each do |config_class|
+          config = config_class.new(@api, resource_name)
+          if config.confines?
+            return config
+          end
+        end
+        return nil
       end
     end
 
