@@ -24,6 +24,7 @@ module ApipieBindings
     end
 
     def routes
+      return [] unless apidoc
       apidoc[:apis].map do |api|
         ApipieBindings::Route.new(
           api[:api_url], api[:http_method], api[:short_description])

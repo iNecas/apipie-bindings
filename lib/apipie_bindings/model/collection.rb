@@ -67,6 +67,7 @@ module ApipieBindings
         present_keys = unique_keys.find do |keys|
           keys.all? { |key| conditions.has_key?(key) }
         end
+        raise "Could not find unique conditions among #{conditions.inspect} to identify the resource" unless present_keys
         present_keys.inject({}) do |unique_conditions, key|
           unique_conditions.update(key =>conditions[key])
         end
