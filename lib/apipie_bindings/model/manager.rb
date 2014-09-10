@@ -23,6 +23,10 @@ module ApipieBindings
         app_config.api
       end
 
+      def logger
+        api.log
+      end
+
       private
 
       def stringify_keys(hash)
@@ -41,7 +45,7 @@ module ApipieBindings
         unless model.respond_to?(name)
           singleton_class.send(:define_method, name, &block)
         else
-          warn("method #{name} is already defined on model #{model}")
+          logger.debug("method #{name} is already defined on model #{model}")
         end
       end
 
