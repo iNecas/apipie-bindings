@@ -16,19 +16,38 @@ module ApipieBindings
 
     class MemberManager < Manager
       def save
-        raise NotImplementedError
+        if data['id']
+          new_data = resource.action(:update).call(data)
+        else
+          new_data = resource.action(:create).call(data)
+        end
+        new_keys = new_data.keys - @data.keys
+        define_data_accessors!(new_keys)
+        @data = data.merge(new_data)
       end
 
-      def defined_data_accessors!
-        data.each_key do |key|
+      def define_data_accessors!(keys = nil)
+        keys ||= data_with_unset.keys
+        keys.each do |key|
           define_model_method(key) { self[key] }
           define_model_method("#{key}=") { |value| self[key] = value }
         end
       end
 
+      def data_with_unset
+        return data unless resource.action(:create)
+        resource.action(:create).all_params.inject(data) do |data_with_unset, param|
+          if data_with_unset.key?(param.name.to_s)
+            data_with_unset
+          else
+            data_with_unset.merge(param.name.to_s => nil)
+          end
+        end
+      end
+
       def define_accessors!
         define_sub_resources!
-        defined_data_accessors!
+        define_data_accessors!
       end
     end
   end

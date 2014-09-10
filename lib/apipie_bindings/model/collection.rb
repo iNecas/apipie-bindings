@@ -3,7 +3,9 @@ module ApipieBindings
     class Collection < Base
       include Enumerable
 
-      def_delegators :model_manager, :find_or_create, :create, :find, :all, :where, :each
+      def_delegators(:model_manager,
+                     :find_or_create, :create, :find, :all, :where, :each,
+                     :build)
 
       def to_s
         "Collection of #{ super }: #{ model_manager.data.inspect }"
@@ -25,8 +27,7 @@ module ApipieBindings
       end
 
       def create(data)
-        result = resource.action(:create).call(data.merge(self.data))
-        build_member(result)
+        build(result).tap { |member| member.save }
       end
 
       def find(conditions)
@@ -45,11 +46,15 @@ module ApipieBindings
         all.each(&block)
       end
 
+      def build(member_data = {})
+        Member.new(app_config, resource, self, member_data.merge(data))
+      end
+
       private
 
       def raw_search(search_options)
         resource.action(:index).call(search_options)['results'].map do |result|
-          build_member(result)
+          build(result)
         end
       end
 
@@ -59,10 +64,6 @@ module ApipieBindings
           conditions = unique_conditions(conditions)
         end
         resource_config.search_options(conditions)
-      end
-
-      def build_member(member_data)
-        Member.new(app_config, resource, self, member_data.merge(data))
       end
 
       def unique_keys
