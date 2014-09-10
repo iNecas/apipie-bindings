@@ -1,7 +1,7 @@
 module ApipieBindings
   module Model
     class Member < Base
-      def_delegators :model_manager, :save
+      def_delegators :model_manager, :save, :reload
 
       def to_s
         "Member: #{ model_manager.description_with_parent }"
@@ -24,6 +24,13 @@ module ApipieBindings
         new_keys = new_data.keys - @data.keys
         define_data_accessors!(new_keys)
         @data = data.merge(new_data)
+        model
+      end
+
+      def reload
+        reloaded_model = parent.model_manager.find_by_uniq(data)
+        @data = data.merge(reloaded_model.model_manager.data)
+        model
       end
 
       def description

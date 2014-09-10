@@ -23,7 +23,11 @@ module ApipieBindings
       end
 
       def find_or_create(options)
-        raw_search(search_options(options, true)).first || create(options)
+        find_by_uniq(options) || create(options)
+      end
+
+      def find_by_uniq(options)
+        raw_search(search_options(options, true)).first
       end
 
       def create(data)
@@ -57,8 +61,20 @@ module ApipieBindings
       private
 
       def raw_search(search_options)
-        resource.action(:index).call(search_options)['results'].map do |result|
+        search_options_with_required = fill_required_fields(resource.action(:index).all_params, search_options)
+        resource.action(:index).call(search_options_with_required)['results'].map do |result|
           build(result)
+        end
+      end
+
+      def fill_required_fields(params, search_options)
+        params.inject(search_options) do |ret_search_options, param|
+          key = param.name.to_s
+          if param.required? && !ret_search_options.key?(key) && data.key?(key)
+            ret_search_options.merge(key => data[key])
+          else
+            ret_search_options
+          end
         end
       end
 
