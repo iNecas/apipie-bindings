@@ -8,7 +8,7 @@ module ApipieBindings
                      :build)
 
       def to_s
-        "Collection of #{ super }: #{ model_manager.data.inspect }"
+        "Collection: #{ model_manager.description_with_parent }"
       end
 
       private
@@ -35,7 +35,7 @@ module ApipieBindings
       end
 
       def where(conditions)
-        Collection.new(app_config, resource, self, data.merge(conditions))
+        Collection.new(app_config, resource, self.model, data.merge(conditions))
       end
 
       def all
@@ -47,7 +47,11 @@ module ApipieBindings
       end
 
       def build(member_data = {})
-        Member.new(app_config, resource, self, member_data.merge(data))
+        Member.new(app_config, resource, self.model, member_data.merge(data))
+      end
+
+      def description
+        resource.name.to_s
       end
 
       private

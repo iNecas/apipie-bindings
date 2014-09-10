@@ -4,7 +4,7 @@ module ApipieBindings
       def_delegators :model_manager, :save
 
       def to_s
-        "Member of #{ super }: #{ model_manager.unique_attributes.inspect }"
+        "Member: #{ model_manager.description_with_parent }"
       end
 
       private
@@ -24,6 +24,10 @@ module ApipieBindings
         new_keys = new_data.keys - @data.keys
         define_data_accessors!(new_keys)
         @data = data.merge(new_data)
+      end
+
+      def description
+        resource_config.description(data)
       end
 
       def define_data_accessors!(keys = nil)

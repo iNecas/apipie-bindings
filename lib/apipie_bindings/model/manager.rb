@@ -27,6 +27,19 @@ module ApipieBindings
         api.log
       end
 
+      def description
+        raise NotImplementedError
+      end
+
+      def description_with_parent
+        parts = []
+        if parent
+          parts << parent.model_manager.description_with_parent
+        end
+        parts << description
+        parts.join('/')
+      end
+
       private
 
       def stringify_keys(hash)

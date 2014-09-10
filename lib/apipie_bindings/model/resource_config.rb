@@ -35,6 +35,10 @@ module ApipieBindings
         [%w[id], %w[name]]
       end
 
+      def description(data)
+        data['name'] || data['id']
+      end
+
       # Helper method for producing the sub_resource objects
       def sub_resource(name, conditions = {})
         SubResource.new(name, conditions)
