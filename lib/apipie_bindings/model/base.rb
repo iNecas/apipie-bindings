@@ -22,6 +22,10 @@ module ApipieBindings
         model_manager.resource.name
       end
 
+      def to_hash
+        model_manager.data
+      end
+
       private
 
       def model_manager_class

@@ -4,7 +4,8 @@ module ApipieBindings
       include Enumerable
 
       def_delegators(:model_manager,
-                     :find_or_create, :create, :find, :all, :where, :each,
+                     :find_or_create, :find, :find_by_uniq,
+                     :create, :all, :where, :each,
                      :build)
 
       def to_s
@@ -31,7 +32,7 @@ module ApipieBindings
       end
 
       def create(data)
-        build(result).tap { |member| member.save }
+        build(data).tap { |member| member.save }
       end
 
       def find(conditions)
