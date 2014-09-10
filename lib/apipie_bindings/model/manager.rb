@@ -57,6 +57,24 @@ module ApipieBindings
                          sub_resource.conditions)
         end
       end
+
+      def unique_keys
+        resource_config.unique_keys
+      end
+
+      # Reduces the conditions to the minimal set that uniquely identifies the
+      # resource.
+      def unique_data(data)
+        data = stringify_keys(data)
+        present_keys = unique_keys.find do |keys|
+          keys.all? { |key| data.has_key?(key) }
+        end
+        if present_keys
+          present_keys.inject({}) do |unique_data, key|
+            unique_data.update(key => data[key])
+          end
+        end
+      end
     end
   end
 end

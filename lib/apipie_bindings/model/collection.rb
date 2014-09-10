@@ -61,27 +61,12 @@ module ApipieBindings
       def search_options(conditions = {}, unique = false)
         conditions = conditions.merge(data)
         if unique
-          conditions = unique_conditions(conditions)
+          conditions = unique_data(conditions)
+          if conditions.nil?
+            raise "Could not find unique data among #{data.inspect} to identify the resource"
+          end
         end
         resource_config.search_options(conditions)
-      end
-
-      def unique_keys
-        resource_config.unique_keys
-      end
-
-      # Reduces the conditions to the minimal set that uniquely identifies the
-      # resource.
-      def unique_conditions(conditions)
-        conditions = stringify_keys(conditions)
-        # TODO: include the data from parent
-        present_keys = unique_keys.find do |keys|
-          keys.all? { |key| conditions.has_key?(key) }
-        end
-        raise "Could not find unique conditions among #{conditions.inspect} to identify the resource" unless present_keys
-        present_keys.inject({}) do |unique_conditions, key|
-          unique_conditions.update(key =>conditions[key])
-        end
       end
     end
   end

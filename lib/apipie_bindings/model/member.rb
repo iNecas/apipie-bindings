@@ -4,7 +4,7 @@ module ApipieBindings
       def_delegators :model_manager, :save
 
       def to_s
-        "Member of #{ super }: #{ model_manager.data.inspect }"
+        "Member of #{ super }: #{ model_manager.unique_attributes.inspect }"
       end
 
       private
@@ -48,6 +48,10 @@ module ApipieBindings
       def define_accessors!
         define_sub_resources!
         define_data_accessors!
+      end
+
+      def unique_attributes
+        unique_data(self.data)
       end
     end
   end
