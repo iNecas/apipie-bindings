@@ -1,7 +1,9 @@
 module ApipieBindings
   module Model
     class Collection < Base
-      def_delegators :model_manager, :find_or_create, :create, :find, :find_all
+      include Enumerable
+
+      def_delegators :model_manager, :find_or_create, :create, :find, :all, :where, :each
 
       def to_s
         "Collection of #{ super }: #{ model_manager.data.inspect }"
@@ -31,8 +33,16 @@ module ApipieBindings
         find_all(conditions).first
       end
 
-      def find_all(conditions)
-        raw_search(search_options(conditions))
+      def where(conditions)
+        Collection.new(app_config, resource, self, data.merge(conditions))
+      end
+
+      def all
+        raw_search(search_options)
+      end
+
+      def each(&block)
+        all.each(&block)
       end
 
       private
@@ -43,7 +53,7 @@ module ApipieBindings
         end
       end
 
-      def search_options(conditions, unique = false)
+      def search_options(conditions = {}, unique = false)
         conditions = conditions.merge(data)
         if unique
           conditions = unique_conditions(conditions)
