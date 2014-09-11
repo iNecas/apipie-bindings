@@ -53,7 +53,26 @@ module ApipieBindings
         Collection.new(app_config, resource, parent, data)
       end
 
+      def call_action(action_name, params = {})
+        action = resource.action(action_name)
+        params = fill_required_fields(action, self.data.merge(params))
+        response = action.call(params)
+        response_resource = resource_config.detect_response_resource(action, params, response)
+        build_member(response_resource, response)
+      end
+
       private
+
+      def fill_required_fields(action, search_options)
+        action.all_params.inject(search_options) do |ret_search_options, param|
+          key = param.name.to_s
+          if param.required? && !ret_search_options.key?(key) && data.key?(key)
+            ret_search_options.merge(key => data[key])
+          else
+            ret_search_options
+          end
+        end
+      end
 
       def stringify_keys(hash)
         ApipieBindings::IndifferentHash.deep_stringify_keys(hash)

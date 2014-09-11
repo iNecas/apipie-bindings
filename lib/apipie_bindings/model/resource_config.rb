@@ -51,7 +51,7 @@ module ApipieBindings
       # @return What resource should be used to represent the output of the action
       #    by default, the resource of the original action is used
       def detect_response_resource(action, params, response)
-        action.resource
+        api.resource(action.resource)
       end
 
       class SubResource

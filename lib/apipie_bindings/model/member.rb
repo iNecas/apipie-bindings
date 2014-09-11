@@ -1,7 +1,7 @@
 module ApipieBindings
   module Model
     class Member < Base
-      def_delegators :model_manager, :save, :reload
+      def_delegators :model_manager, :save, :destroy, :reload
 
       def to_s
         "Member: #{ model_manager.description_with_parent }"
@@ -17,13 +17,19 @@ module ApipieBindings
     class MemberManager < Manager
       def save
         if data['id']
-          new_data = resource.action(:update).call(data)
+          new_model = call_action(:update)
         else
-          new_data = resource.action(:create).call(data)
+          new_model = call_action(:create)
         end
+        new_data = new_model.to_hash
         new_keys = new_data.keys - @data.keys
         define_data_accessors!(new_keys)
         @data = data.merge(new_data)
+        model
+      end
+
+      def destroy
+        call_action(:destroy)
         model
       end
 
@@ -37,18 +43,11 @@ module ApipieBindings
         resource_config.description(data)
       end
 
-      def call_action(action, params)
-        params            = data.merge(params)
-        response          = action.call(params)
-        response_resource = resource_config.detect_response_resource(action, params, response)
-        build_member(response_resource, response)
-      end
-
       def define_operations!
         resource.actions.each do |action|
           next if [:index, :show, :update, :delete].include?(action.name)
           define_model_method(action.name) do |params = {}|
-            model_manager.call_action(action, params)
+            model_manager.call_action(action.name, params)
           end
         end
       end
