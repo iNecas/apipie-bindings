@@ -52,7 +52,7 @@ module ApipieBindings
       end
 
       def build(member_data = {})
-        Member.new(app_config, resource, self.model, member_data.merge(data))
+        build_member(self.resource, data.merge(member_data))
       end
 
       def description

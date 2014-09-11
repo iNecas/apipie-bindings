@@ -1,12 +1,13 @@
 module ApipieBindings
   module Model
     class AppConfig
-      attr_reader :api, :name, :resource_configs
+      attr_reader :api, :name, :resource_configs, :app
 
       def initialize(api, name = "Application")
         @api  = api
         @name = name
         @resource_config_mapping = {}
+        @app  = ApipieBindings::Model::App.new(self)
       end
 
       # @api override

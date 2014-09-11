@@ -44,6 +44,16 @@ module ApipieBindings
         SubResource.new(name, conditions)
       end
 
+      # @api override
+      # @param [ApipieBindings::Action] action called
+      # @param [Hash] params used with the call
+      # @param [Hash] returned data from the called action
+      # @return What resource should be used to represent the output of the action
+      #    by default, the resource of the original action is used
+      def detect_response_resource(action, params, response)
+        action.resource
+      end
+
       class SubResource
         attr_reader :name, :conditions
 

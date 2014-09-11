@@ -40,6 +40,19 @@ module ApipieBindings
         parts.join('/')
       end
 
+      def build_member(resource, data)
+        if self.resource.name == resource.name
+          parent = self.model
+        else
+          parent = build_collection(resource)
+        end
+        Member.new(app_config, resource, parent, data)
+      end
+
+      def build_collection(resource, parent = app_config.app, data = {})
+        Collection.new(app_config, resource, parent, data)
+      end
+
       private
 
       def stringify_keys(hash)
@@ -64,10 +77,9 @@ module ApipieBindings
 
       def define_sub_resource_method(sub_resource)
         define_model_method(sub_resource.name) do
-          Collection.new(model_manager.app_config,
-                         model_manager.api.resource(sub_resource.name),
-                         self,
-                         sub_resource.conditions)
+          model_manager.build_collection(model_manager.api.resource(sub_resource.name),
+                                         self,
+                                         sub_resource.conditions)
         end
       end
 

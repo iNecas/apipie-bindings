@@ -37,6 +37,22 @@ module ApipieBindings
         resource_config.description(data)
       end
 
+      def call_action(action, params)
+        params            = data.merge(params)
+        response          = action.call(params)
+        response_resource = resource_config.detect_response_resource(action, params, response)
+        build_member(response_resource, response)
+      end
+
+      def define_operations!
+        resource.actions.each do |action|
+          next if [:index, :show, :update, :delete].include?(action.name)
+          define_model_method(action.name) do |params = {}|
+            model_manager.call_action(action, params)
+          end
+        end
+      end
+
       def define_data_accessors!(keys = nil)
         keys ||= data_with_unset.keys
         keys.each do |key|
@@ -57,6 +73,7 @@ module ApipieBindings
       end
 
       def define_accessors!
+        define_operations!
         define_sub_resources!
         define_data_accessors!
       end

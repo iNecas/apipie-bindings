@@ -4,7 +4,7 @@ module ApipieBindings
 
   class Action
 
-    attr_reader :name
+    attr_reader :name, :resource
 
     def initialize(resource, name, api)
       @resource = resource
