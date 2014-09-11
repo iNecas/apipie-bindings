@@ -99,7 +99,7 @@ module ApipieBindings
         define_model_method(sub_resource.name) do
           model_manager.build_collection(model_manager.api.resource(sub_resource.name),
                                          self,
-                                         sub_resource.conditions_with_value)
+                                         sub_resource.conditions(self))
         end
       end
 

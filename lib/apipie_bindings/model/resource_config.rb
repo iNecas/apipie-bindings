@@ -40,8 +40,8 @@ module ApipieBindings
       end
 
       # Helper method for producing the sub_resource objects
-      def sub_resource(name, conditions = {})
-        SubResource.new(name, conditions)
+      def sub_resource(resource)
+        SubResource.new(resource)
       end
 
       # @api override
@@ -61,17 +61,43 @@ module ApipieBindings
         {}
       end
 
-      class SubResource
-        attr_reader :name, :conditions
+      def extracted_ids(data)
+        data.inject({}) do |hash, (k, v)|
+          case k
+          when 'id'
+            hash.update(primary_id => v)
+          when /_id$/
+            hash.update(k => v)
+          else
+            hash
+          end
+        end
+      end
 
-        def initialize(resource_name, conditions)
-          raise ArgumentError unless resource_name.is_a? Symbol
-          @name       = resource_name
-          @conditions = conditions
+      def primary_id
+        "#{ApipieBindings::Inflector.singularize(resource_name)}_id"
+      end
+
+      class SubResource
+        attr_reader :resource
+
+        def initialize(resource)
+          raise ArgumentError unless resource.is_a? Resource
+          @resource = resource
         end
 
-        def conditions_with_value
-          conditions.reject { |_, v| v.nil? }
+        def name
+          @resource.name
+        end
+
+        def conditions(model)
+          extracted_ids = model.model_manager.resource_config.extracted_ids(model.to_hash)
+          index_params = resource.action(:index).all_params
+          related_ids = extracted_ids.keep_if do |id_name, value|
+            index_params.any? { |p| p.name == id_name }
+          end
+
+          related_ids
         end
       end
     end
