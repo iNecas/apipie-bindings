@@ -34,8 +34,8 @@ module ApipieBindings
       end
 
       def reload
-        reloaded_model = parent.model_manager.find_by_uniq(data)
-        @data = data.merge(reloaded_model.model_manager.data)
+        reloaded_model = call_action(:show)
+        @data = data.merge(reloaded_model.to_hash)
         model
       end
 
