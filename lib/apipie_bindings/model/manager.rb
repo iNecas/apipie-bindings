@@ -55,7 +55,7 @@ module ApipieBindings
 
       def call_action(action_name, params = {})
         action = resource.action(action_name)
-        params = fill_required_fields(action, self.data.merge(params))
+        params = fill_required_fields(action, params)
         response = action.call(params)
         response_resource = resource_config.detect_response_resource(action, params, response)
         build_member(response_resource, response)
@@ -64,9 +64,10 @@ module ApipieBindings
       private
 
       def fill_required_fields(action, search_options)
-        action.all_params.inject(search_options) do |ret_search_options, param|
+        params_to_include = action.params_from_routes + action.all_params.find_all(&:required?)
+        params_to_include.inject(search_options) do |ret_search_options, param|
           key = param.name.to_s
-          if param.required? && !ret_search_options.key?(key) && data.key?(key)
+          if !ret_search_options.key?(key) && data.key?(key)
             ret_search_options.merge(key => data[key])
           else
             ret_search_options
@@ -98,7 +99,7 @@ module ApipieBindings
         define_model_method(sub_resource.name) do
           model_manager.build_collection(model_manager.api.resource(sub_resource.name),
                                          self,
-                                         sub_resource.conditions)
+                                         sub_resource.conditions_with_value)
         end
       end
 

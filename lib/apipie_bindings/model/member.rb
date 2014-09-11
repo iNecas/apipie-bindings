@@ -17,9 +17,9 @@ module ApipieBindings
     class MemberManager < Manager
       def save
         if data['id']
-          new_model = call_action(:update)
+          new_model = call_action(:update, self.data)
         else
-          new_model = call_action(:create)
+          new_model = call_action(:create, self.data)
         end
         new_data = new_model.to_hash
         new_keys = new_data.keys - @data.keys
@@ -43,7 +43,15 @@ module ApipieBindings
         resource_config.description(data)
       end
 
-      def define_operations!
+      def define_custom_methods!
+        resource_config.custom_methods.each do |name, block|
+          define_model_method(name) do |params = {}|
+            block.call(self, params)
+          end
+        end
+      end
+
+      def define_action_methods!
         resource.actions.each do |action|
           next if [:index, :show, :update, :delete].include?(action.name)
           define_model_method(action.name) do |params = {}|
@@ -72,7 +80,8 @@ module ApipieBindings
       end
 
       def define_accessors!
-        define_operations!
+        define_custom_methods!
+        define_action_methods!
         define_sub_resources!
         define_data_accessors!
       end

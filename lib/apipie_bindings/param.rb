@@ -19,6 +19,10 @@ module ApipieBindings
       @required
     end
 
+    def required!
+      @required = true
+    end
+
     def to_s
       "<Param #{ required? ? '*' : '' }#{@name} (#{@expected_type.to_s.capitalize})>"
     end

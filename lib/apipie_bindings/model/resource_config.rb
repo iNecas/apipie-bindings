@@ -54,6 +54,13 @@ module ApipieBindings
         api.resource(action.resource)
       end
 
+      # @api_override
+      # @return [Hash<Symbol,Proc>] names and procs to define custom methods on
+      #   the resource
+      def custom_methods
+        {}
+      end
+
       class SubResource
         attr_reader :name, :conditions
 
@@ -61,6 +68,10 @@ module ApipieBindings
           raise ArgumentError unless resource_name.is_a? Symbol
           @name       = resource_name
           @conditions = conditions
+        end
+
+        def conditions_with_value
+          conditions.reject { |_, v| v.nil? }
         end
       end
     end
