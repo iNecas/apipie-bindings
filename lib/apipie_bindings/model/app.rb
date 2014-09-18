@@ -18,7 +18,7 @@ module ApipieBindings
       end
 
       def define_accessors!
-        define_sub_resources!
+        define_associations!
       end
     end
   end

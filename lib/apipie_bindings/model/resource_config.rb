@@ -14,8 +14,16 @@ module ApipieBindings
 
       # @api override
       # @return [Array<SubResource>]
-      def sub_resources(data)
-        []
+      def associated_collections(data)
+        if @resource_name
+          api.resources.find_all do |resource|
+            index_action = resource.action(:index)
+            index_action && index_action.all_params.any? { |p| p.name == primary_id }
+          end.map { |resource| associated_collection(resource) }
+        else
+          # not actual resource - it's the member that represents the app itself
+          api.resources.map { |resource| associated_collection(resource) }
+        end
       end
 
       # @api override
@@ -40,8 +48,8 @@ module ApipieBindings
       end
 
       # Helper method for producing the sub_resource objects
-      def sub_resource(resource)
-        SubResource.new(resource)
+      def associated_collection(resource)
+        AssociatedCollection.new(resource)
       end
 
       # @api override
@@ -75,10 +83,11 @@ module ApipieBindings
       end
 
       def primary_id
+        binding.pry unless resource_name
         "#{ApipieBindings::Inflector.singularize(resource_name)}_id"
       end
 
-      class SubResource
+      class AssociatedCollection
         attr_reader :resource
 
         def initialize(resource)

@@ -5,8 +5,10 @@ module ApipieBindings
 
       def_delegators(:model_manager,
                      :find_or_create, :find, :find_by_uniq,
-                     :create, :all, :where, :each,
-                     :build)
+                     :create, :all, :where, :each, :reload,
+                     :build, :save)
+
+      def_delegators(:all, :delete, :<<)
 
       def to_s
         "Collection: #{ model_manager.description_with_parent }"
@@ -43,8 +45,69 @@ module ApipieBindings
         Collection.new(app_config, resource, self.model, data.merge(conditions))
       end
 
+      def reload
+        @all = @origin_all = nil
+      end
+
       def all
-        raw_search(search_options)
+        return @all if @all
+        @origin_all = @all = raw_search(search_options)
+      end
+
+      def all=(value)
+        @all = value
+      end
+
+      def save
+        ret = 0
+        to_add.each do |added_member|
+          ret += 1
+          add!(added_member)
+        end
+
+        to_remove.each do |removed_member|
+          ret += 1
+          remove!(removed_member)
+        end
+
+        to_save do |changed_member|
+          ret += 1
+          save!(changed_mamber)
+        end
+      end
+
+      def changed?
+        return false if @all.nil?
+        to_add.any? || to_remove.any? || to_save.any?
+      end
+
+      def to_add
+        @all - @origin_all
+      end
+
+      def to_remove
+        @origin_all - @all
+      end
+
+      def add!(member)
+        # we need to know what association this collection represents: the resource
+        # itself might not be enough: it might be in different roles: a user
+        # can be author, editor, reader - add role to the collection details
+        raise NotImplementedError, "how to add a resource to collection?"
+      end
+
+      def remove!(member)
+        raise NotImplementedError, "how to remove a resource from collection"
+      end
+
+      def save!(member)
+        raise NotImplementedError, "how to save a member inside a collection?"
+      end
+
+      def to_save
+        (self.all - to_add - to_remove).find_all do |member|
+          member.model_manager.changed?
+        end
       end
 
       def each(&block)

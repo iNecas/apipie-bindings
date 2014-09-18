@@ -25,6 +25,7 @@ module ApipieBindings
         new_keys = new_data.keys - @data.keys
         define_data_accessors!(new_keys)
         @data = data.merge(new_data)
+        mark_unchanged!
         model
       end
 
@@ -36,6 +37,7 @@ module ApipieBindings
       def reload
         reloaded_model = call_action(:show)
         @data = data.merge(reloaded_model.to_hash)
+        mark_unchanged!
         model
       end
 
@@ -82,7 +84,7 @@ module ApipieBindings
       def define_accessors!
         define_custom_methods!
         define_action_methods!
-        define_sub_resources!
+        define_associations!
         define_data_accessors!
       end
 

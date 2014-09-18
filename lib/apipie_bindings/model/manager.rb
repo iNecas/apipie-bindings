@@ -4,11 +4,13 @@ module ApipieBindings
       attr_reader :model, :app_config, :resource, :parent, :data
 
       def initialize(model, app_config, resource, parent, data)
-        @model      = model
-        @app_config = app_config
-        @resource   = resource
-        @parent     = parent
-        @data       = stringify_keys(data)
+        @model         = model
+        @app_config    = app_config
+        @resource      = resource
+        @parent        = parent
+        @associated_collections = {}
+        @data          = stringify_keys(data)
+        @origin_data   = @data
       end
 
       def resource_config
@@ -61,6 +63,20 @@ module ApipieBindings
         build_member(response_resource, response)
       end
 
+      def changed?
+        @origin_data != @data
+      end
+
+      def mark_unchanged!
+        @origin_data = @data
+      end
+
+      def sub_resource_collection(sub_resource)
+        @associated_collections[sub_resource.name] ||= build_collection(sub_resource.resource,
+                                                               model,
+                                                               sub_resource.conditions(self.model))
+      end
+
       private
 
       def fill_required_fields(action, search_options)
@@ -79,8 +95,8 @@ module ApipieBindings
         ApipieBindings::IndifferentHash.deep_stringify_keys(hash)
       end
 
-      def define_sub_resources!
-        resource_config.sub_resources(data).each do |sub_resource|
+      def define_associations!
+        resource_config.associated_collections(data).each do |sub_resource|
           define_sub_resource_method(sub_resource)
         end
       end
@@ -97,9 +113,7 @@ module ApipieBindings
 
       def define_sub_resource_method(sub_resource)
         define_model_method(sub_resource.name) do
-          model_manager.build_collection(model_manager.api.resource(sub_resource.name),
-                                         self,
-                                         sub_resource.conditions(self))
+          model_manager.sub_resource_collection(sub_resource)
         end
       end
 
@@ -120,6 +134,7 @@ module ApipieBindings
           end
         end
       end
+
     end
   end
 end
