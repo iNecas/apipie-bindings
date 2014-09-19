@@ -42,6 +42,12 @@ module ApipieBindings
         parts.join('/')
       end
 
+      def params_from_docs
+        action = [:create, :update].find { |a| resource.has_action?(a) }
+        return [] unless action
+        resource.action(action).all_params
+      end
+
       def build_member(resource, data)
         if self.resource.name == resource.name
           parent = self.model
