@@ -1,10 +1,10 @@
 module ApipieBindings
   module Model
     class Member < Base
-      def_delegators :model_manager, :save, :destroy, :reload
+      def_delegators :_manager, :save, :destroy, :reload
 
       def to_s
-        "Member: #{ model_manager.description_with_parent }"
+        "Member: #{ _manager.description_with_parent }"
       end
 
       private
@@ -57,7 +57,7 @@ module ApipieBindings
         resource.actions.each do |action|
           next if [:index, :show, :update, :delete].include?(action.name)
           define_model_method(action.name) do |params = {}|
-            model_manager.call_action(action.name, params)
+            _manager.call_action(action.name, params)
           end
         end
       end

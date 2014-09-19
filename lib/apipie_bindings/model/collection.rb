@@ -3,7 +3,7 @@ module ApipieBindings
     class Collection < Base
       include Enumerable
 
-      def_delegators(:model_manager,
+      def_delegators(:_manager,
                      :find_or_create, :find, :find_by_uniq,
                      :create, :all, :where, :each, :reload,
                      :build, :save)
@@ -11,7 +11,7 @@ module ApipieBindings
       def_delegators(:all, :delete, :<<)
 
       def to_s
-        "Collection: #{ model_manager.description_with_parent }"
+        "Collection: #{ _manager.description_with_parent }"
       end
 
       private
@@ -106,7 +106,7 @@ module ApipieBindings
 
       def to_save
         (self.all - to_add - to_remove).find_all do |member|
-          member.model_manager.changed?
+          member._manager.changed?
         end
       end
 

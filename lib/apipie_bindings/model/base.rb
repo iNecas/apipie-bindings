@@ -6,12 +6,12 @@ module ApipieBindings
     class Base
       extend Forwardable
 
-      attr_reader :model_manager
-      def_delegators 'model_manager.data', '[]', '[]='
+      attr_reader :_manager
+      def_delegators '_manager.data', '[]', '[]='
 
       def initialize(api, resource = nil, parent = nil,  data = {})
-        @model_manager = model_manager_class.new(self, api, resource, parent, data)
-        model_manager.define_accessors!
+        @_manager = model_manager_class.new(self, api, resource, parent, data)
+        _manager.define_accessors!
       end
 
       def inspect
@@ -19,11 +19,11 @@ module ApipieBindings
       end
 
       def to_s
-        model_manager.resource.name
+        _manager.resource.name
       end
 
       def to_hash
-        model_manager.data
+        _manager.data
       end
 
       private

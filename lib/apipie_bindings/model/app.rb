@@ -2,7 +2,7 @@ module ApipieBindings
   module Model
     class App < Base
       def to_s
-        model_manager.app_config.name
+        _manager.app_config.name
       end
 
       private

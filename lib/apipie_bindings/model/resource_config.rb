@@ -100,7 +100,7 @@ module ApipieBindings
         end
 
         def conditions(model)
-          extracted_ids = model.model_manager.resource_config.extracted_ids(model.to_hash)
+          extracted_ids = model._manager.resource_config.extracted_ids(model.to_hash)
           index_params = resource.action(:index).all_params
           related_ids = extracted_ids.keep_if do |id_name, value|
             index_params.any? { |p| p.name == id_name }

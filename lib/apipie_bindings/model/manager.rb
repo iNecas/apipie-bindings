@@ -36,7 +36,7 @@ module ApipieBindings
       def description_with_parent
         parts = []
         if parent
-          parts << parent.model_manager.description_with_parent
+          parts << parent._manager.description_with_parent
         end
         parts << description
         parts.join('/')
@@ -113,7 +113,7 @@ module ApipieBindings
 
       def define_sub_resource_method(sub_resource)
         define_model_method(sub_resource.name) do
-          model_manager.sub_resource_collection(sub_resource)
+          _manager.sub_resource_collection(sub_resource)
         end
       end
 
