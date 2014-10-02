@@ -26,6 +26,24 @@ module ApipieBindings
         _manager.data
       end
 
+      def method_missing(name, *args)
+        if _manager.model_respond_to?(name)
+          _manager.model_method_missing(name, *args)
+        else
+          super
+        end
+      end
+
+      def respond_to_missing?(name, *args)
+        super || _manager.model_respond_to?(name)
+      end
+
+      def methods
+        # we don't convert the model_instance_methods to_sym because
+        # they could pottentially be sourced from a user input
+        super + _manager.model_instance_methods
+      end
+
       private
 
       def model_manager_class

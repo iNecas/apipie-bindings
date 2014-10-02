@@ -22,8 +22,6 @@ module ApipieBindings
           new_model = call_action(:create, self.data)
         end
         new_data = new_model.to_hash
-        new_keys = new_data.keys - @data.keys
-        define_data_accessors!(new_keys)
         @data = data.merge(new_data)
         mark_unchanged!
         model
@@ -62,11 +60,33 @@ module ApipieBindings
         end
       end
 
-      def define_data_accessors!(keys = nil)
-        keys ||= data_with_unset.keys
-        keys.each do |key|
-          define_model_method(key) { self[key] }
-          define_model_method("#{key}=") { |value| self[key] = value }
+      def model_method_missing(name, *args)
+        if model_respond_to?(name)
+          call_data_method(name, *args)
+        else
+          raise NotImplementedError, "#{name}"
+        end
+      end
+
+      def model_respond_to?(name)
+        model_instance_methods.include?(name.to_s)
+      end
+
+      def model_instance_methods
+        data_with_unset.keys.inject([]) do |ret, key|
+          ret << key << "#{key}="
+        end
+      end
+
+      def call_data_method(name, *args)
+        name = name.to_s
+        key = name.sub(/=$/, '')
+        if name.end_with?('=')
+          raise ArgumentError, "wrong number of arguments: #{args.size}, expected 1" unless args.size == 1
+          @data[key] = args.first
+        else
+          raise ArgumentError, "wrong number of arguments: #{args.size}, expected 0" unless args.size == 0
+          @data[key]
         end
       end
 
@@ -82,10 +102,9 @@ module ApipieBindings
       end
 
       def define_accessors!
-        define_custom_methods!
-        define_action_methods!
         define_associations!
-        define_data_accessors!
+        define_action_methods!
+        define_custom_methods!
       end
 
       def unique_attributes

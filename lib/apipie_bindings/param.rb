@@ -10,7 +10,7 @@ module ApipieBindings
       params = param[:params] || []
       @params = params.map { |p| ApipieBindings::Param.new(p) }
       @expected_type = param[:expected_type].to_sym
-      @description = param[:description].gsub(/<\/?[^>]+?>/, "")
+      @description = param[:description].to_s.gsub(/<\/?[^>]+?>/, "")
       @required = param[:required]
       @validator = param[:validator]
     end

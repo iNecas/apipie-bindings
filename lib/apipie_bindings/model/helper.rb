@@ -2,7 +2,6 @@ module ApipieBindings
   module Model
     # Defines methods to be used in the IRB console for describing the models
     module Helper
-
       def show(model)
         puts Renderer.new(model).render
       end
@@ -30,9 +29,16 @@ module ApipieBindings
 
         def add_params
           add_title "Params:"
-          param_definitions = model._manager.params_from_docs.map do |param|
+          param_definitions = model._manager.params.map do |param|
             name_with_flags = "#{ param.name }#{ param.required? ? "*" : "" }:"
-            [name_with_flags, model[param.name].inspect]
+            value = model[param.name]
+            value_desc = case value
+                         when Hash, Array
+                           value.class.name
+                         else
+                           value.inspect
+                         end
+            [name_with_flags, value_desc]
           end
           add_definitions(param_definitions)
         end

@@ -42,6 +42,19 @@ module ApipieBindings
         parts.join('/')
       end
 
+      def params
+        params = data.map do |key, value|
+          ApipieBindings::Param.new(:name => key, :expected_type => 'string')
+        end
+        params_from_docs.inject(params) do |included_params, param|
+          unless included_params.any? { |p| p.name.to_s == param.name.to_s }
+            included_params << param
+          else
+            included_params
+          end
+        end
+      end
+
       def params_from_docs
         action = [:create, :update].find { |a| resource.has_action?(a) }
         return [] unless action
@@ -83,6 +96,14 @@ module ApipieBindings
                                                                sub_resource.conditions(self.model))
       end
 
+      def model_method_missing(name, *args)
+        raise NotImplementedError
+      end
+
+      def model_respond_to?(name)
+        false
+      end
+
       private
 
       def fill_required_fields(action, search_options)
@@ -110,11 +131,7 @@ module ApipieBindings
       def define_model_method(name, &block)
         # ruby 1.9.3+ has signleton_class method, but we are not there yet
         singleton_class = model.instance_eval { class << self; self end }
-        unless model.respond_to?(name)
-          singleton_class.send(:define_method, name, &block)
-        else
-          logger.debug("method #{name} is already defined on model #{model}")
-        end
+        singleton_class.send(:define_method, name, &block)
       end
 
       def define_sub_resource_method(sub_resource)
