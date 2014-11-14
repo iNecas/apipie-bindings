@@ -104,6 +104,10 @@ module ApipieBindings
         false
       end
 
+      def model_instance_methods
+        []
+      end
+
       private
 
       def fill_required_fields(action, search_options)
